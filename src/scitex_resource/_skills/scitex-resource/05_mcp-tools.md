@@ -1,7 +1,7 @@
 ---
 description: |
   [TOPIC] scitex-resource MCP tools
-  [DETAILS] The MCP tools exposed by `scitex-resource-mcp` (FastMCP over stdio). Each tool delegates to the canonical Python API — no logic duplication. Wire scitex-resource into an MCP-aware agent / IDE; sanity-check via `scitex-resource mcp list-tools`. Install: `pip install scitex-resource[mcp]`; launch: `scitex-resource-mcp`.
+  [DETAILS] The MCP tools exposed by `scitex-resource-mcp` (FastMCP over stdio). Each tool delegates to the canonical Python API — no logic duplication. Wire scitex-resource into an MCP-aware agent / IDE; sanity-check via `scitex-resource mcp list-tools`. Install: `pip install scitex-resource[all]`; launch: `scitex-resource-mcp`.
 tags: [scitex-resource-mcp-tools]
 ---
 

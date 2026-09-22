@@ -8,6 +8,10 @@ from __future__ import annotations
 import os
 import sys
 
+import scitex_logging as slogging
+
+console = slogging.getConsole(__name__)
+
 
 def readable_bytes(num_bytes: float | int, suffix: str = "B") -> str:
     """Human-readable byte size (e.g. 1024 → '1.0KiB'). Vendored from scitex.str."""
@@ -24,9 +28,14 @@ fmt_size = readable_bytes
 
 
 def printc(text: str, c: str = "white") -> None:
-    """Colored print — vendored from scitex.str.printc. Respects NO_COLOR + TTY."""
+    """Colored status line — vendored from scitex.str.printc.
+
+    Respects NO_COLOR + TTY. Emits via the scitex-logging console surface
+    (stdout, PS-220) so caller code stays capturable; terminal color codes
+    are preserved verbatim in the payload.
+    """
     if os.environ.get("NO_COLOR") or not sys.stdout.isatty():
-        print(text)
+        console.info(text)
         return
     codes = {
         "red": "\033[31m",
@@ -37,4 +46,4 @@ def printc(text: str, c: str = "white") -> None:
         "cyan": "\033[36m",
         "white": "\033[37m",
     }
-    print(f"{codes.get(c, '')}{text}\033[0m")
+    console.info(f"{codes.get(c, '')}{text}\033[0m")

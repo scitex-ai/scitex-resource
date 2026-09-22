@@ -34,7 +34,7 @@ def mcp_start(dry_run: bool, yes: bool):
         from .._mcp.server import mcp as mcp_server
     except ImportError as e:
         raise click.ClickException(
-            f"MCP not available. Install: pip install scitex-resource[mcp]\n{e}"
+            f"MCP not available. Install: pip install scitex-resource[all]\n{e}"
         ) from e
     click.echo("Starting scitex-resource MCP server (stdio)...")
     mcp_server.run()
@@ -56,7 +56,7 @@ def mcp_doctor():
 
         click.echo(f"  [OK] fastmcp v{fastmcp.__version__}")
     except ImportError:
-        click.echo("  [FAIL] fastmcp not installed (pip install scitex-resource[mcp])")
+        click.echo("  [FAIL] fastmcp not installed (pip install scitex-resource[all])")
         all_ok = False
     try:
         from .._mcp.server import mcp as _mcp  # noqa: F401
@@ -153,7 +153,7 @@ def mcp_install(as_json: bool, dry_run: bool, yes: bool):
         click.echo(
             _json.dumps(
                 {
-                    "install_command": "pip install scitex-resource[mcp]",
+                    "install_command": "pip install scitex-resource[all]",
                     "config": config,
                     "verify_commands": ["scitex-resource mcp doctor"],
                 },
@@ -166,7 +166,7 @@ def mcp_install(as_json: bool, dry_run: bool, yes: bool):
     click.echo()
     click.echo("Install scitex-resource with MCP support:")
     click.echo()
-    click.secho("  pip install scitex-resource[mcp]", fg="green")
+    click.secho("  pip install scitex-resource[all]", fg="green")
     click.echo()
     click.echo("Add to your MCP client config (e.g., claude_desktop_config.json):")
     click.echo()

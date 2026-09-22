@@ -11,6 +11,44 @@ audit:
       - codecov.yml  # Codecov dashboard config (see _skills/.../02_package_11_ci-and-codecov.md)
     dirs:
       - scitex-resource  # nested worktree / scratch checkout (PS-103)
+
+  exemptions:
+    # PS-231 (workflow-duplication) — `.github/workflows/rtd-sphinx-build-on-ubuntu-latest.yml`.
+    # This leaf's docs workflow is genuinely unique, so the rule's caller
+    # alternative does not apply: beyond building Sphinx HTML it VENDORS the
+    # built bundle into `src/scitex_resource/_sphinx_html/` and bot-commits
+    # the refresh back to develop (that bundle ships inside the wheel). The
+    # org reusable `rtd-sphinx-build` is BUILD-ONLY by design, and its own
+    # header warns that converting a vendoring leaf to a bare `uses:`
+    # freezes that bundle with CI green and nothing saying so. Keeping the
+    # local workflow is the documented exception, not drift.
+    PS-231:
+      - path: .github/workflows/rtd-sphinx-build-on-ubuntu-latest.yml
+        line: 0
+        reason: >-
+          Vendors built Sphinx HTML into src/scitex_resource/_sphinx_html/
+          and bot-commits the refresh to develop; the org rtd-sphinx-build
+          reusable is build-only and its header forbids converting vendoring
+          leaves. Local workflow is load-bearing, not a stale fork.
+    # PS-224 (runner-destination-unregistered) — `.github/workflows/cla.yml::call`.
+    # Deliberately GitHub-hosted. This job is outsider-triggerable
+    # (`issue_comment` / `pull_request_target` are unauthenticated on a public
+    # repo and are NOT covered by the fork-PR approval gate) and runs
+    # third-party code (the CLA assistant action, via the org reusable). The
+    # self-hosted pool is persistent and its $HOME holds the live fleet
+    # credential, so repointing would let any stranger execute third-party
+    # code next to that credential by commenting on an issue — a security
+    # regression, not a compliance win. Mirrors the operator-escalated
+    # exemption carried by scitex-agent-container / scitex-container for the
+    # same workflow and triggers. Kept hosted until an ephemeral/isolated
+    # runner exists for untrusted-trigger workflows.
+    PS-224:
+      - path: .github/workflows/cla.yml::call
+        line: 0
+        reason: >-
+          Deliberately GitHub-hosted: outsider-triggerable job running
+          third-party code must stay on an ephemeral runner; the persistent
+          self-hosted pool's $HOME holds the live fleet credential.
 # audit:
 #   skip:
 #     - PS-108

@@ -30,15 +30,15 @@ that don't need GPU info (e.g. 30 s heartbeats on GPU-less hosts).
 
 from __future__ import annotations
 
-import logging
 import os
 import shutil
 import subprocess
 from typing import Any
 
 import psutil as _psutil
+import scitex_logging as slogging
 
-log = logging.getLogger(__name__)
+log = slogging.getLogger(__name__)
 
 
 def get_metrics(gpu: bool = True) -> dict[str, Any]:

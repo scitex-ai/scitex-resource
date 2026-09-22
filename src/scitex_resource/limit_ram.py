@@ -4,7 +4,11 @@
 
 import resource
 
+import scitex_logging as slogging
+
 from ._compat import fmt_size
+
+log = slogging.getLogger(__name__)
 
 
 def limit_ram(ram_factor):
@@ -12,7 +16,7 @@ def limit_ram(ram_factor):
     free_bytes = get_ram() * 1_024
     max_val = int(min(ram_factor * free_bytes, free_bytes))
     resource.setrlimit(resource.RLIMIT_AS, (max_val, hard))
-    print(f"\nFree RAM was limited to {fmt_size(max_val)}")
+    log.info(f"\nFree RAM was limited to {fmt_size(max_val)}")
 
 
 def get_ram():
