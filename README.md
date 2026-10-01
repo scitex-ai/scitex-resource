@@ -14,39 +14,90 @@
 
 <!-- scitex-badges:start -->
 <p align="center">
-  <a href="https://pypi.org/project/scitex-resource/"><img src="https://img.shields.io/pypi/v/scitex-resource.svg" alt="PyPI"></a>
-  <a href="https://pypi.org/project/scitex-resource/"><img src="https://img.shields.io/pypi/pyversions/scitex-resource.svg" alt="Python"></a>
-  <a href="https://github.com/ywatanabe1989/scitex-resource/actions/workflows/test.yml"><img src="https://github.com/ywatanabe1989/scitex-resource/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
-  <a href="https://codecov.io/gh/ywatanabe1989/scitex-resource"><img src="https://codecov.io/gh/ywatanabe1989/scitex-resource/graph/badge.svg" alt="Coverage"></a>
-  <a href="https://scitex-resource.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/scitex-resource/badge/?version=latest" alt="Docs"></a>
-  <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/license-AGPL_v3-blue.svg" alt="License: AGPL v3"></a>
+  <a href="https://pypi.org/project/scitex-resource/"><img src="https://img.shields.io/pypi/v/scitex-resource?label=pypi" alt="pypi"></a>
+  <a href="https://pypi.org/project/scitex-resource/"><img src="https://img.shields.io/pypi/pyversions/scitex-resource?label=python" alt="python"></a>
+  <a href="https://scitex-resource.readthedocs.io/en/latest/"><img src="https://img.shields.io/readthedocs/scitex-resource?label=docs" alt="docs"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/ywatanabe1989/scitex-resource/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ywatanabe1989/scitex-resource/ci.yml?branch=develop&label=tests" alt="tests"></a>
+  <a href="https://codecov.io/gh/ywatanabe1989/scitex-resource"><img src="https://img.shields.io/codecov/c/github/ywatanabe1989/scitex-resource/develop?label=cov" alt="cov"></a>
 </p>
 <!-- scitex-badges:end -->
 
 ---
 
+## Quick Start
+
+```python
+import scitex_resource as r
+
+print(r.get_host_name())           # canonical host identity
+metrics = r.get_metrics()          # cpu / mem / disk / gpu / load
+specs = r.get_specs()              # rich human-readable snapshot
+```
+
+## Demo
+
+Host identity resolution and live metrics in four lines (see
+[Quick Start](#quick-start) above):
+
+```mermaid
+flowchart LR
+    env["$SCITEX_RESOURCE_HOST"] --> resolve["resolve canonical name"]
+    proj["./.scitex/resource/config.yaml"] --> resolve
+    home["~/.scitex/resource/config.yaml"] --> resolve
+    host["socket.gethostname()"] --> resolve
+    resolve --> name["get_host_name() → 'mba'"]
+    resolve --> cfg["get_host_config()"]
+    psutil["psutil"] --> metrics["get_metrics()"]
+    metrics --> snapshot[("cpu / mem / disk / gpu / load")]
+    psutil --> log["log_processor_usages(limit_min=30)"]
+    log --> csv[("~/.scitex/resource/runtime/processor_usages.csv")]
+```
+
+<p align="center"><sub><b>Figure 1.</b> Host-identity resolution cascade and the metrics pipeline: psutil feeds one-shot snapshots and the continuous CSV logger.</sub></p>
+
 ## Installation
 
 ```bash
-pip install scitex-resource
+uv pip install "scitex-resource[all]"
 ```
+
+Requires Python >= 3.9.
+
+<details>
+<summary><b>Per-module extras</b></summary>
+
+<br>
+
+| Extra | Pulls in |
+|---|---|
+| `all` | `sh` + `cli` + `dev` + `docs` (recommended) |
+| `sh` | scitex-sh (shell helpers) |
+| `cli` | ruamel.yaml (CLI machine-config round-trip) |
+| `dev` | pytest, pytest-cov, ruff (contributors) |
+| `docs` | Sphinx + RTD theme + myst-parser (docs build only) |
+
+```bash
+uv pip install -e ".[dev]"   # editable install for contributors
+```
+
+</details>
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    pkg["scitex_resource"]
+    pkg --> core["core<br/>_host, _machine,<br/>_runtime, limit_ram"]
+    pkg --> collect["collection<br/>_utils, _specs,<br/>_log_processor_usages"]
+    pkg --> cli["interfaces<br/>_cli, _mcp"]
+    pkg --> compat["_compat<br/>vendored str / gen helpers"]
+    collect --> csv[("processor_usages.csv")]
+    core --> cfg[("host config.yaml")]
 ```
-src/scitex_resource/
-├── __init__.py                # public API surface (lazy via __getattr__)
-├── _host.py                   # canonical host name + host config resolution
-├── _machine.py                # deprecated aliases → _host (back-compat)
-├── _runtime.py                # SCITEX_DIR-aware runtime path resolver
-├── _log_processor_usages.py   # CPU / RAM / GPU / VRAM CSV logger
-├── limit_ram.py               # cap process RSS via resource.RLIMIT_AS
-├── _compat.py                 # vendored str / gen helpers (decoupling)
-├── _cli/                      # Click-based CLI (hosts, specs, metrics, …)
-├── _mcp/                      # FastMCP server (Python-API mirror)
-├── _utils/                    # psutil wrappers (metrics / specs)
-└── _specs/                    # rich human-readable snapshot helpers
-```
+
+<p align="center"><sub><b>Figure 2.</b> Package layout: core identity primitives, psutil-backed collection, and the CLI / MCP interfaces over a dependency-free compat layer.</sub></p>
 
 ## 1 Interfaces
 
@@ -102,32 +153,6 @@ $ scitex-resource ram-limit 0.8
 ```
 
 </details>
-
-## Demo
-
-```mermaid
-flowchart LR
-    env["$SCITEX_RESOURCE_HOST"] --> resolve["resolve canonical name"]
-    proj["./.scitex/resource/config.yaml"] --> resolve
-    home["~/.scitex/resource/config.yaml"] --> resolve
-    host["socket.gethostname()"] --> resolve
-    resolve --> name["get_host_name() → 'mba'"]
-    resolve --> cfg["get_host_config()"]
-    psutil["psutil"] --> metrics["get_metrics()"]
-    metrics --> snapshot[("cpu / mem / disk / gpu / load")]
-    psutil --> log["log_processor_usages(limit_min=30)"]
-    log --> csv[("~/.scitex/resource/runtime/processor_usages.csv")]
-```
-
-## Quick Start
-
-```python
-import scitex_resource as r
-
-print(r.get_host_name())           # canonical host identity
-metrics = r.get_metrics()          # cpu / mem / disk / gpu / load
-specs = r.get_specs()              # rich human-readable snapshot
-```
 
 ## Host identity config — `~/.scitex/resource/config.yaml`
 

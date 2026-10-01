@@ -26,7 +26,7 @@ def test_mcp_install_text_includes_pip_command():
     # Act
     result = runner.invoke(cli, ["mcp", "install"])
     # Assert
-    assert "pip install scitex-resource[mcp]" in result.output
+    assert "pip install scitex-resource[all]" in result.output
 
 
 def test_mcp_install_json_has_mcp_servers_key():

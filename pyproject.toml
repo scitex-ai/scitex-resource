@@ -32,6 +32,10 @@ dependencies = [
     # raises ModuleNotFoundError. PS-213 console-script-deps-must-be-core
     # (scitex-dev v0.17.10+) enforces this rule ecosystem-wide.
     "fastmcp>=0.1.0",
+    # Declared because package source logs via scitex-logging (PS-220):
+    # _compat.printc emits via slogging console; limit_ram, _get_env_info
+    # and _specs._metrics bind slogging loggers at module import.
+    "scitex-logging",
 ]
 
 [project.optional-dependencies]
@@ -83,6 +87,10 @@ scitex-resource = "scitex_resource"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["--disable-warnings"]
+markers = [
+    "smoke: fast subprocess CLI happy-path tests (<60s)",
+    "e2e: slow end-to-end workflows against real subsystems (RUN_E2E=1 to run)",
+]
 
 [tool.coverage.run]
 parallel = true

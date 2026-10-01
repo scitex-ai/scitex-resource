@@ -17,7 +17,7 @@ try:
 except ImportError as e:  # pragma: no cover — fastmcp is optional
     raise ImportError(
         "fastmcp is required for scitex-resource MCP support.\n"
-        "Install with: pip install scitex-resource[mcp]"
+        "Install with: pip install scitex-resource[all]"
     ) from e
 
 from .._machine import get_machine_config, get_machine_name

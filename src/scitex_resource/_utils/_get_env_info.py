@@ -11,6 +11,10 @@ from collections import namedtuple
 
 from scitex_dev import try_import_optional
 
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
+
 torch = try_import_optional("torch")
 TORCH_AVAILABLE = torch is not None
 
@@ -458,9 +462,9 @@ def get_pretty_env_info():
 
 
 def main():
-    print("Collecting environment information...")
+    log.info("Collecting environment information...")
     output = get_pretty_env_info()
-    print(output)
+    log.info(output)
 
 
 if __name__ == "__main__":
